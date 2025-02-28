@@ -1,0 +1,9 @@
+﻿{
+  "DefaultId": "ZLMediaKit",
+  "Name": "ZLMediaKit",
+  "Version": "20230523",
+  "Tags": [ "媒体服务器", "视频监控" ],
+  "Description": "一个基于C++11的高性能运营级流媒体服务框架",
+  "Platform": [ "any" ],
+  "AgentExecute": "YiQiDong.ZLMediaKit"
+}
