@@ -94,17 +94,7 @@ namespace YiQiDong.ZLMediaKit
         {
             base.Start();
             cts = new();
-            Task.Run(() =>
-            {
-                try
-                {
-                    innnerStart();
-                }
-                catch (Exception ex)
-                {
-                    AgentContext.LogError($"启动容器时失败，原因：{ex}");
-                }
-            });
+            Task.Run(() => { innnerStart(); });
         }
 
         private void outputNotSupportOsAndArchitecture()
@@ -114,65 +104,72 @@ namespace YiQiDong.ZLMediaKit
 
         private void innnerStart()
         {
-            if (Process != null)
-                return;
-            if (AgentContext.Container == null || !AgentContext.Container.AutoStart)
-                return;
-
-            var imageFolder = AgentContext.Container.ImageFolder;
-            var containerFolder = AgentContext.Container.ContainerFolder;
-            var binCompressFile = getZLMediaKitBinCompressFile();
-            var executeFile = getZLMediaKitExecuteFile();
-
-            //检查复制可执行文件
-            var containerExeFile = Path.Combine(containerFolder, executeFile);
-            var imageBinCompressFile = Path.Combine(imageFolder, binCompressFile);
-            if (!File.Exists(imageBinCompressFile))
-                AgentContext.LogWarn($"未找到二进制压缩文件[{imageBinCompressFile}]");
-            //如果容器目录中可执行文件不存在，或者文件修改时间与二进制压缩文件不一致，则重新解压
-            if (File.Exists(imageBinCompressFile))
-                if (!File.Exists(containerExeFile) || File.GetLastWriteTime(containerExeFile) != File.GetLastWriteTime(imageBinCompressFile))
-                {
-                    AgentContext.LogInfo($"正在解压二进制压缩文件[{imageBinCompressFile}]...");
-                    using (var archive = SharpCompress.Archives.SevenZip.SevenZipArchive.Open(imageBinCompressFile))
-                        archive.WriteToDirectory(
-                            containerFolder,
-                            new SharpCompress.Common.ExtractionOptions()
-                            {
-                                Overwrite = true
-                            });
-                    File.SetLastWriteTime(containerExeFile, File.GetLastWriteTime(imageBinCompressFile));
-                    //如果当前是在Linux系统上
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    {
-                        //如果文件没有可执行权限，则添加可执行权限
-                        var fileInfo = new UnixFileInfo(Path.Combine(containerFolder, executeFile));
-                        if (!fileInfo.FileAccessPermissions.HasFlag(FileAccessPermissions.UserExecute))
-                            fileInfo.FileAccessPermissions |= FileAccessPermissions.UserExecute;
-                    }
-                }
-            var process_filename = Path.Combine(containerFolder, getZLMediaKitExecuteFile());
-            AgentContext.LogInfo("Process Filename：" + process_filename);
-
-            ProcessStartInfo psi = new ProcessStartInfo(process_filename);
-            //如果当前是在Linux系统上，则增加so文件搜索路径环境变量
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            try
             {
-                psi.Environment["LD_LIBRARY_PATH"] = containerFolder;
+                if (Process != null)
+                    return;
+                if (AgentContext.Container == null || !AgentContext.Container.AutoStart)
+                    return;
+
+                var imageFolder = AgentContext.Container.ImageFolder;
+                var containerFolder = AgentContext.Container.ContainerFolder;
+                var binCompressFile = getZLMediaKitBinCompressFile();
+                var executeFile = getZLMediaKitExecuteFile();
+
+                //检查复制可执行文件
+                var containerExeFile = Path.Combine(containerFolder, executeFile);
+                var imageBinCompressFile = Path.Combine(imageFolder, binCompressFile);
+                if (!File.Exists(imageBinCompressFile))
+                    AgentContext.LogWarn($"未找到二进制压缩文件[{imageBinCompressFile}]");
+                //如果容器目录中可执行文件不存在，或者文件修改时间与二进制压缩文件不一致，则重新解压
+                if (File.Exists(imageBinCompressFile))
+                    if (!File.Exists(containerExeFile) || File.GetLastWriteTime(containerExeFile) != File.GetLastWriteTime(imageBinCompressFile))
+                    {
+                        AgentContext.LogInfo($"正在解压二进制压缩文件[{imageBinCompressFile}]...");
+                        using (var archive = SharpCompress.Archives.SevenZip.SevenZipArchive.Open(imageBinCompressFile))
+                            archive.WriteToDirectory(
+                                containerFolder,
+                                new SharpCompress.Common.ExtractionOptions()
+                                {
+                                    Overwrite = true
+                                });
+                        File.SetLastWriteTime(containerExeFile, File.GetLastWriteTime(imageBinCompressFile));
+                        //如果当前是在Linux系统上
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                        {
+                            //如果文件没有可执行权限，则添加可执行权限
+                            var fileInfo = new UnixFileInfo(Path.Combine(containerFolder, executeFile));
+                            if (!fileInfo.FileAccessPermissions.HasFlag(FileAccessPermissions.UserExecute))
+                                fileInfo.FileAccessPermissions |= FileAccessPermissions.UserExecute;
+                        }
+                    }
+                var process_filename = Path.Combine(containerFolder, getZLMediaKitExecuteFile());
+                AgentContext.LogInfo("Process Filename：" + process_filename);
+
+                ProcessStartInfo psi = new ProcessStartInfo(process_filename);
+                //如果当前是在Linux系统上，则增加so文件搜索路径环境变量
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    psi.Environment["LD_LIBRARY_PATH"] = containerFolder;
+                }
+                psi.RedirectStandardOutput = true;
+                psi.RedirectStandardError = true;
+                psi.RedirectStandardInput = true;
+                psi.UseShellExecute = false;
+                psi.WorkingDirectory = containerFolder;
+                Process = Process.Start(psi);
+                Process.EnableRaisingEvents = true;
+                Process.OutputDataReceived += Process_OutputDataReceived;
+                Process.ErrorDataReceived += Process_ErrorDataReceived;
+                Process.BeginOutputReadLine();
+                Process.BeginErrorReadLine();
+                AgentContext.LogInfo($"进程[Id:{Process.Id},Name:{Process.ProcessName}]已经启动。");
+                Process.Exited += Process_Exited;
             }
-            psi.RedirectStandardOutput = true;
-            psi.RedirectStandardError = true;
-            psi.RedirectStandardInput = true;
-            psi.UseShellExecute = false;
-            psi.WorkingDirectory = containerFolder;
-            Process = Process.Start(psi);
-            Process.EnableRaisingEvents = true;
-            Process.OutputDataReceived += Process_OutputDataReceived;
-            Process.ErrorDataReceived += Process_ErrorDataReceived;
-            Process.BeginOutputReadLine();
-            Process.BeginErrorReadLine();
-            AgentContext.LogInfo($"进程[Id:{Process.Id},Name:{Process.ProcessName}]已经启动。");
-            Process.Exited += Process_Exited;
+            catch (Exception ex)
+            {
+                AgentContext.LogError($"启动ZLMediaServer进程时出错，原因：{ex}");
+            }
         }
 
         private LogLevel lastLogLevel = LogLevel.Info;
