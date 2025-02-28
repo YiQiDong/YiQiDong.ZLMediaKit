@@ -48,7 +48,7 @@ foreach (var rid in selectArchs)
         Directory.CreateDirectory(publishFolder);
 
     Console.WriteLine($"正在发布{productDir}项目...");
-    QbCommand.Run("dotnet", $"publish src/{productDir} -c Release -r {rid} --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=true");
+    QbCommand.Run("dotnet", $"publish src/{productDir} -c Release -r {rid} --self-contained -p:PublishTrimmed=true");
     //复制文件
     QbFile.CopyFiles($"src/{productDir}", publishFolder, "YiQiDong.Image.*", true);
     //修改容器信息文件中的版本号
