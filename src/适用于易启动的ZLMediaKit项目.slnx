@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="YiQiDong.ZLMediaKit/YiQiDong.ZLMediaKit.csproj" />
+  <Project Path="_build/_build.csproj" />
+</Solution>

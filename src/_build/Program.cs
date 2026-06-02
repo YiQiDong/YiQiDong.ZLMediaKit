@@ -61,7 +61,7 @@ foreach (var rid in selectArchs)
     QbJson.Write(Path.Combine(publishFolder, "YiQiDong.Image.json"), "Platform", new string[] { rid });
     QbJson.Write(Path.Combine(publishFolder, "YiQiDong.Image.json"), "BuildTime", buildTime);
 
-    Console.WriteLine($"正在制作弈启动镜像[{rid}]...");
+    Console.WriteLine($"正在制作易启动镜像[{rid}]...");
     var outFile = Path.Combine(outFolder, $"{productName}-{version}-{rid}_{buildVersion}.ymg");
     //再删除ymg文件
     QbFile.Delete(outFile);
