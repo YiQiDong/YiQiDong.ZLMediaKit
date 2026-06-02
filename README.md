@@ -1,3 +1,3 @@
 #YiQiDong.ZLMediaKit
 
-适用于弈启动的ZLMediaKit项目
+适用于易启动的ZLMediaKit项目
