@@ -17,12 +17,12 @@ var productDir = "YiQiDong.ZLMediaKit";
 //准备目录变量
 var appFolder = QbFolder.GetAppFolder();
 if (appFolder == Environment.CurrentDirectory)
-    Environment.CurrentDirectory = Path.GetFullPath("../../../../../");
+    Environment.CurrentDirectory = Path.GetFullPath("../../../../");
 var baseFolder = Environment.CurrentDirectory;
 var outFolder = Path.GetFullPath("bin");
 if (!Directory.Exists(outFolder))
     Directory.CreateDirectory(outFolder);
-var productName = QbJson.ReadString(Path.Combine($"src/{productDir}/YiQiDong.Image.json"), "Name");
+var productName = QbJson.ReadString(Path.Combine($"{productDir}/YiQiDong.Image.json"), "Name");
 
 //开始
 Console.WriteLine("----------------------------------");
@@ -38,19 +38,19 @@ if (selectArchs == null || selectArchs.Length == 0)
 
 foreach (var rid in selectArchs)
 {
-    var publishFolder = $"src/{productDir}/bin/Release/{rid}/publish";
+    var publishFolder = $"{productDir}/bin/Release/{rid}/publish";
     Console.WriteLine($"开始编译[{rid}]...");
     Console.WriteLine("正在删除Release目录...");
     //先删除Release目录
-    QbFolder.DeleteFolders("src", "Release", SearchOption.AllDirectories);
+    QbFolder.DeleteFolders(productDir, "Release", SearchOption.AllDirectories);
 
     if (!Directory.Exists(publishFolder))
         Directory.CreateDirectory(publishFolder);
 
     Console.WriteLine($"正在发布{productDir}项目...");
-    QbCommand.Run("dotnet", $"publish src/{productDir} -c Release -r {rid} --self-contained -p:PublishTrimmed=true");
+    QbCommand.Run("dotnet", $"publish {productDir} -c Release -r {rid} --self-contained -p:PublishTrimmed=true");
     //复制文件
-    QbFile.CopyFiles($"src/{productDir}", publishFolder, "YiQiDong.Image.*", true);
+    QbFile.CopyFiles(productDir, publishFolder, "YiQiDong.Image.*", true);
     //修改容器信息文件中的版本号
     QbJson.WriteString(Path.Combine(publishFolder, "YiQiDong.Image.json"), "Version", version);
     //修改Agent的值
