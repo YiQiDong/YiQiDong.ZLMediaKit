@@ -8,10 +8,10 @@
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="ini-parser-netstandard" Version="2.5.2" />
+		<PackageReference Include="ini-parser-netstandard" Version="2.5.3" />
 		<PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
-		<PackageReference Include="SharpCompress" Version="0.39.0" />
-		<PackageReference Include="YiQiDong.Core" Version="2.4.19" />
+		<PackageReference Include="SharpCompress" Version="0.50.1" />
+		<PackageReference Include="YiQiDong.Core" Version="2026.28.731" />
 	</ItemGroup>
 
 	<ItemGroup>

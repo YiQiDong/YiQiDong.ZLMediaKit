@@ -65,7 +65,7 @@ foreach (var rid in selectArchs)
     var outFile = Path.Combine(outFolder, $"{productName}-{version}-{rid}_{buildVersion}.ymg");
     //再删除ymg文件
     QbFile.Delete(outFile);
-    using (var archive = ZipArchive.Create())
+    using (var archive = ZipArchive.CreateArchive())
     {
         archive.AddAllFromDirectory(publishFolder);
         var binCompressFile = rid + ".7z";

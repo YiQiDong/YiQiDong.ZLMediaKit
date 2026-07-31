@@ -2,8 +2,8 @@
 using YiQiDong.Protocol.V1.Model;
 using YiQiDong.Core;
 using IniParser.Model;
-using YiQiDong.Core.Utils;
 using YiQiDong.Agent;
+using Quick.Utils;
 
 namespace YiQiDong.ZLMediaKit.Functions
 {
@@ -172,7 +172,14 @@ namespace YiQiDong.ZLMediaKit.Functions
             return list;
         }
 
-        public override FieldForGet[] Get()
+        public override FieldForGet[] Execute(FunctionRequest request)
+        {
+            if(request == null)
+                return Get();
+            return Post(request);
+        }
+
+        public FieldForGet[] Get()
         {
             var isReadOnly = AgentContext.Container.AutoStart;
             var list = innerGet(null, isReadOnly);
@@ -181,7 +188,7 @@ namespace YiQiDong.ZLMediaKit.Functions
             return list.ToArray();
         }
 
-        public override FieldForGet[] Post(FunctionRequest request)
+        public FieldForGet[] Post(FunctionRequest request)
         {
             var list = innerGet(request);
             if (request.IsFieldIdsMatch("Save"))

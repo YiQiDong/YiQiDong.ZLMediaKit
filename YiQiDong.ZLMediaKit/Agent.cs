@@ -80,9 +80,7 @@ namespace YiQiDong.ZLMediaKit
                 var imageFolder = AgentContext.Container.ImageFolder;
                 var containerFolder = AgentContext.Container.ContainerFolder;
 
-                AddFunction(new Config("配置修改", imageFolder, containerFolder), false);
-                AddFunction(new Config("配置查看", imageFolder, containerFolder), true);
-
+                AddFunction(new Config("配置", imageFolder, containerFolder));
                 AddFunction(new AdvancedConfig(containerFolder));
 
                 //检查复制ini文件
@@ -126,7 +124,7 @@ namespace YiQiDong.ZLMediaKit
                     if (!File.Exists(containerExeFile) || File.GetLastWriteTime(containerExeFile) != File.GetLastWriteTime(imageBinCompressFile))
                     {
                         AgentContext.LogInfo($"正在解压二进制压缩文件[{imageBinCompressFile}]...");
-                        using (var archive = SharpCompress.Archives.SevenZip.SevenZipArchive.Open(imageBinCompressFile))
+                        using (var archive = SharpCompress.Archives.SevenZip.SevenZipArchive.OpenArchive(imageBinCompressFile))
                             archive.WriteToDirectory(
                                 containerFolder,
                                 new SharpCompress.Common.ExtractionOptions()
